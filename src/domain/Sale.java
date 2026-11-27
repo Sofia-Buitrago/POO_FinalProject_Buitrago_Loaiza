@@ -10,13 +10,13 @@ import java.util.List;
  * A sale is never deleted or edited. It can only be cancelled.
  */
 public class Sale implements Serializable {
-
     private int saleId;
     private LocalDate date;
     private Customer customer;
     private Employee employee;
     private List<SaleItem> items;
     private boolean cancelled;
+    private boolean registered;
 
     /** Creates an empty sale. The customer and the employee must be active. */
     public Sale(int saleId, LocalDate date, Customer customer, Employee employee) {
@@ -38,6 +38,7 @@ public class Sale implements Serializable {
         this.employee = employee;
         this.items = new ArrayList<>();
         this.cancelled = false;
+        this.registered = false;
     }
 
     public int getSaleId() {
@@ -65,8 +66,20 @@ public class Sale implements Serializable {
         return cancelled;
     }
 
-    /** Adds a line to the sale. A cancelled sale cannot be changed. */
+    public boolean isRegistered() {
+        return registered;
+    }
+
+    /** The store calls this when it saves the sale. After that, no more items can be added. */
+    public void markAsRegistered() {
+        registered = true;
+    }
+
+    /** Adds a line to the sale. A registered or cancelled sale cannot be changed. */
     public void addItem(SaleItem item) {
+        if (registered) {
+            throw new IllegalStateException("A registered sale cannot be changed.");
+        }
         if (cancelled) {
             throw new IllegalStateException("A cancelled sale cannot be changed.");
         }
@@ -94,7 +107,7 @@ public class Sale implements Serializable {
     }
 
     @Override
-    public String toString() {//hace que se pueda entender al imprimir en consola
+    public String toString() {
         String state = "";
         if (cancelled) {
             state = " [CANCELLED]";

@@ -10,7 +10,6 @@ import java.util.List;
  * and applies the business rules that connect them.
  */
 public class Store implements Serializable {
-
     private String name;
     private List<Game> games;
     private List<Category> categories;
@@ -33,17 +32,16 @@ public class Store implements Serializable {
     }
 
     /** Changes the name of the store, which cannot be empty. */
-    public void setName(String name) { //el set se pone para que luego hagamos esta funcion y podamos validarlo, que no coloque algo que no se puede//
+    public void setName(String name) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("The store name cannot be empty.");
         }
-        this.name = name.trim();  //es para quitar espacios//
+        this.name = name.trim();
     }
 
     // ---------------------------------------------------------------
     // Lists (copies, so the original lists cannot be changed from outside)
     // ---------------------------------------------------------------
-
     public List<Game> getGames() {
         return new ArrayList<>(games);
     }
@@ -67,14 +65,13 @@ public class Store implements Serializable {
     // ---------------------------------------------------------------
     // Categories
     // ---------------------------------------------------------------
-
     /** Adds a category. Two categories cannot have the same id. */
     public void addCategory(Category category) {
         if (category == null) {
             throw new IllegalArgumentException("The category cannot be null.");
         }
         if (findCategoryById(category.getId()) != null) {
-            throw new IllegalArgumentException("There is already a category with that id.");//o tambien validar por nombre//
+            throw new IllegalArgumentException("There is already a category with that id.");
         }
         categories.add(category);
     }
@@ -97,7 +94,7 @@ public class Store implements Serializable {
         }
         for (int i = 0; i < games.size(); i++) {
             if (games.get(i).getCategory() == category) {
-                throw new IllegalStateException("The category has games and cannot be removed.");//identifica si la categoria tiene un juego//
+                throw new IllegalStateException("The category has games and cannot be removed.");
             }
         }
         categories.remove(category);
@@ -106,7 +103,6 @@ public class Store implements Serializable {
     // ---------------------------------------------------------------
     // Games
     // ---------------------------------------------------------------
-
     /** Adds a game. The code must be new and the category must exist in the store. */
     public void addGame(Game game) {
         if (game == null) {
@@ -115,7 +111,7 @@ public class Store implements Serializable {
         if (findGameByCode(game.getCode()) != null) {
             throw new IllegalArgumentException("There is already a game with that code.");
         }
-        if (!categories.contains(game.getCategory())) {//si la categoria no existe..
+        if (!categories.contains(game.getCategory())) {
             throw new IllegalArgumentException("The category of the game is not in the store.");
         }
         games.add(game);
@@ -127,7 +123,7 @@ public class Store implements Serializable {
             return null;
         }
         for (int i = 0; i < games.size(); i++) {
-            if (games.get(i).getCode().equalsIgnoreCase(code.trim())) {//se pone el .equals es para el String, ignore case mayusculas y min
+            if (games.get(i).getCode().equalsIgnoreCase(code.trim())) {
                 return games.get(i);
             }
         }
@@ -142,9 +138,9 @@ public class Store implements Serializable {
         }
         String search = text.trim().toLowerCase();
         for (int i = 0; i < games.size(); i++) {
-            String title = games.get(i).getTitle().toLowerCase();// es pasar aa minuscula 
-            if (title.contains(search)) {//no uso el equals por que solo busco por una palabra
-                result.add(games.get(i)); //aca se puede mostrar que esta agotado en la busqueda que haga el cliente
+            String title = games.get(i).getTitle().toLowerCase();
+            if (title.contains(search)) {
+                result.add(games.get(i));
             }
         }
         return result;
@@ -156,7 +152,7 @@ public class Store implements Serializable {
         if (game == null) {
             throw new IllegalArgumentException("The game does not exist.");
         }
-        game.deactivate();//no se puede elminar un juego por que prsenta una inconsistencia en las ventas
+        game.deactivate();
     }
 
     /** Removes a game only if it has never been sold. Otherwise it must be deactivated. */
@@ -176,7 +172,7 @@ public class Store implements Serializable {
         for (int i = 0; i < sales.size(); i++) {
             List<SaleItem> items = sales.get(i).getItems();
             for (int j = 0; j < items.size(); j++) {
-                if (items.get(j).getGame().equals(game)) {//aca se hace un cambio del ==, por que el codigo es el mismo y el titulo, pero como las variables se van a llamar diferente puede que no sirva solo con el ==
+                if (items.get(j).getGame() == game) {
                     return true;
                 }
             }
@@ -187,7 +183,6 @@ public class Store implements Serializable {
     // ---------------------------------------------------------------
     // Employees
     // ---------------------------------------------------------------
-
     /** Adds an employee. Two employees cannot have the same id. */
     public void addEmployee(Employee employee) {
         if (employee == null) {
@@ -226,7 +221,6 @@ public class Store implements Serializable {
     // ---------------------------------------------------------------
     // Customers
     // ---------------------------------------------------------------
-
     /** Adds a customer. Two customers cannot have the same id. */
     public void addCustomer(Customer customer) {
         if (customer == null) {
@@ -265,7 +259,6 @@ public class Store implements Serializable {
     // ---------------------------------------------------------------
     // Sales
     // ---------------------------------------------------------------
-
     /** Returns the next free sale id. Sales are never deleted, so the size is enough. */
     public int getNextSaleId() {
         return sales.size() + 1;
@@ -279,7 +272,10 @@ public class Store implements Serializable {
         if (sale == null) {
             throw new IllegalArgumentException("The sale cannot be null.");
         }
-        if (findSaleById(sale.getSaleId()) != null) {
+        if (sale.isCancelled()) {
+            throw new IllegalArgumentException("A cancelled sale cannot be registered.");
+        }
+        if (sale.isRegistered() || findSaleById(sale.getSaleId()) != null) {
             throw new IllegalArgumentException("There is already a sale with that id.");
         }
         if (findCustomerById(sale.getCustomer().getId()) != sale.getCustomer()) {
@@ -288,11 +284,16 @@ public class Store implements Serializable {
         if (findEmployeeById(sale.getEmployee().getId()) != sale.getEmployee()) {
             throw new IllegalArgumentException("The employee is not in the store.");
         }
+        if (!sale.getCustomer().isActive()) {
+            throw new IllegalArgumentException("The customer is not active.");
+        }
+        if (!sale.getEmployee().isActive()) {
+            throw new IllegalArgumentException("The employee is not active.");
+        }
         List<SaleItem> items = sale.getItems();
         if (items.isEmpty()) {
             throw new IllegalArgumentException("The sale must have at least one item.");
         }
-
         // Step 1: check every item before delivering anything
         for (int i = 0; i < items.size(); i++) {
             Game game = items.get(i).getGame();
@@ -314,12 +315,12 @@ public class Store implements Serializable {
                 throw new IllegalStateException("Not enough units of " + game.getTitle() + ".");
             }
         }
-
         // Step 2: deliver every item (polymorphism again)
         for (int i = 0; i < items.size(); i++) {
             items.get(i).getGame().deliver(items.get(i).getQuantity());
         }
         sales.add(sale);
+        sale.markAsRegistered();
     }
 
     /** Returns the sale with that id, or null if it does not exist. */
@@ -343,11 +344,9 @@ public class Store implements Serializable {
             throw new IllegalArgumentException("The sale does not exist.");
         }
         sale.cancel(); // throws an exception if it was already cancelled
-
         List<SaleItem> items = sale.getItems();
         for (int i = 0; i < items.size(); i++) {
             Game game = items.get(i).getGame();
-            //if (game.getType().equals("Physical")) {
             if (game instanceof PhysicalGame) {
                 PhysicalGame physicalGame = (PhysicalGame) game;
                 physicalGame.addStock(items.get(i).getQuantity());
@@ -369,9 +368,8 @@ public class Store implements Serializable {
     // ---------------------------------------------------------------
     // Decision support
     // ---------------------------------------------------------------
-
     /** Returns the active physical games whose stock is low and need to be restocked. */
-    public List<Game> getLowStockGames() {//esto es mas como informacion 
+    public List<Game> getLowStockGames() {
         List<Game> result = new ArrayList<>();
         for (int i = 0; i < games.size(); i++) {
             Game game = games.get(i);
@@ -409,7 +407,6 @@ public class Store implements Serializable {
                 }
             }
         }
-
         // Step 2: take the game with the most units, "limit" times
         List<Game> result = new ArrayList<>();
         for (int round = 0; round < limit && round < soldGames.size(); round++) {
@@ -424,4 +421,67 @@ public class Store implements Serializable {
         }
         return result;
     }
+
+    // ---------------------------------------------------------------
+    // Decision support
+    // ---------------------------------------------------------------
+
+    /**
+     * Recommends which physical games should be restocked.
+     * Rules:
+     * 1. Only active physical games with stock at or below the minimum are considered.
+     * 2. The priority is HIGH if there is no stock or if the game sells fast
+     *    (units sold are at least the minimum stock). Otherwise it is MEDIUM.
+     * 3. The suggested quantity brings the stock up to twice the minimum.
+     *    For HIGH priority, the units already sold are added to cover the demand.
+     * The HIGH suggestions come first in the list.
+     */
+    public List<RestockSuggestion> getRestockSuggestions() {
+        List<RestockSuggestion> high = new ArrayList<>();
+        List<RestockSuggestion> medium = new ArrayList<>();
+        for (int i = 0; i < games.size(); i++) {
+            Game game = games.get(i);
+            if (!game.isActive() || !(game instanceof PhysicalGame)) {
+                continue;
+            }
+            PhysicalGame physicalGame = (PhysicalGame) game;
+            if (!physicalGame.isLowStock()) {
+                continue;
+            }
+            int unitsSold = countUnitsSold(game);
+            boolean isHigh = physicalGame.getStock() == 0 || unitsSold >= physicalGame.getMinStock();
+            int quantity = physicalGame.getMinStock() * 2 - physicalGame.getStock();
+            if (isHigh) {
+                quantity = quantity + unitsSold;
+            }
+            if (quantity < 1) {
+                quantity = 1;
+            }
+            if (isHigh) {
+                high.add(new RestockSuggestion(physicalGame, unitsSold, quantity, RestockSuggestion.HIGH));
+            } else {
+                medium.add(new RestockSuggestion(physicalGame, unitsSold, quantity, RestockSuggestion.MEDIUM));
+            }
+        }
+        high.addAll(medium);
+        return high;
+    }
+
+    /** Returns the units sold of a game, counting only sales that are not cancelled. */
+    private int countUnitsSold(Game game) {
+        int total = 0;
+        for (int i = 0; i < sales.size(); i++) {
+            if (sales.get(i).isCancelled()) {
+                continue;
+            }
+            List<SaleItem> items = sales.get(i).getItems();
+            for (int j = 0; j < items.size(); j++) {
+                if (items.get(j).getGame() == game) {
+                    total = total + items.get(j).getQuantity();
+                }
+            }
+        }
+        return total;
+    }
+
 }
