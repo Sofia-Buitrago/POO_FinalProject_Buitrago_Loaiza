@@ -33,11 +33,11 @@ public class Store implements Serializable {
     }
 
     /** Changes the name of the store, which cannot be empty. */
-    public void setName(String name) {
+    public void setName(String name) { //el set se pone para que luego hagamos esta funcion y podamos validarlo, que no coloque algo que no se puede//
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("The store name cannot be empty.");
         }
-        this.name = name.trim();
+        this.name = name.trim();  //es para quitar espacios//
     }
 
     // ---------------------------------------------------------------
@@ -74,7 +74,7 @@ public class Store implements Serializable {
             throw new IllegalArgumentException("The category cannot be null.");
         }
         if (findCategoryById(category.getId()) != null) {
-            throw new IllegalArgumentException("There is already a category with that id.");
+            throw new IllegalArgumentException("There is already a category with that id.");//o tambien validar por nombre//
         }
         categories.add(category);
     }
@@ -97,7 +97,7 @@ public class Store implements Serializable {
         }
         for (int i = 0; i < games.size(); i++) {
             if (games.get(i).getCategory() == category) {
-                throw new IllegalStateException("The category has games and cannot be removed.");
+                throw new IllegalStateException("The category has games and cannot be removed.");//identifica si la categoria tiene un juego//
             }
         }
         categories.remove(category);
@@ -115,7 +115,7 @@ public class Store implements Serializable {
         if (findGameByCode(game.getCode()) != null) {
             throw new IllegalArgumentException("There is already a game with that code.");
         }
-        if (!categories.contains(game.getCategory())) {
+        if (!categories.contains(game.getCategory())) {//si la categoria no existe..
             throw new IllegalArgumentException("The category of the game is not in the store.");
         }
         games.add(game);
@@ -127,7 +127,7 @@ public class Store implements Serializable {
             return null;
         }
         for (int i = 0; i < games.size(); i++) {
-            if (games.get(i).getCode().equalsIgnoreCase(code.trim())) {
+            if (games.get(i).getCode().equalsIgnoreCase(code.trim())) {//se pone el .equals es para el String, ignore case mayusculas y min
                 return games.get(i);
             }
         }
@@ -142,9 +142,9 @@ public class Store implements Serializable {
         }
         String search = text.trim().toLowerCase();
         for (int i = 0; i < games.size(); i++) {
-            String title = games.get(i).getTitle().toLowerCase();
-            if (title.contains(search)) {
-                result.add(games.get(i));
+            String title = games.get(i).getTitle().toLowerCase();// es pasar aa minuscula 
+            if (title.contains(search)) {//no uso el equals por que solo busco por una palabra
+                result.add(games.get(i)); //aca se puede mostrar que esta agotado en la busqueda que haga el cliente
             }
         }
         return result;
@@ -156,7 +156,7 @@ public class Store implements Serializable {
         if (game == null) {
             throw new IllegalArgumentException("The game does not exist.");
         }
-        game.deactivate();
+        game.deactivate();//no se puede elminar un juego por que prsenta una inconsistencia en las ventas
     }
 
     /** Removes a game only if it has never been sold. Otherwise it must be deactivated. */
@@ -176,7 +176,7 @@ public class Store implements Serializable {
         for (int i = 0; i < sales.size(); i++) {
             List<SaleItem> items = sales.get(i).getItems();
             for (int j = 0; j < items.size(); j++) {
-                if (items.get(j).getGame() == game) {
+                if (items.get(j).getGame().equals(game)) {//aca se hace un cambio del ==, por que el codigo es el mismo y el titulo, pero como las variables se van a llamar diferente puede que no sirva solo con el ==
                     return true;
                 }
             }
@@ -347,6 +347,7 @@ public class Store implements Serializable {
         List<SaleItem> items = sale.getItems();
         for (int i = 0; i < items.size(); i++) {
             Game game = items.get(i).getGame();
+            //if (game.getType().equals("Physical")) {
             if (game instanceof PhysicalGame) {
                 PhysicalGame physicalGame = (PhysicalGame) game;
                 physicalGame.addStock(items.get(i).getQuantity());
@@ -370,7 +371,7 @@ public class Store implements Serializable {
     // ---------------------------------------------------------------
 
     /** Returns the active physical games whose stock is low and need to be restocked. */
-    public List<Game> getLowStockGames() {
+    public List<Game> getLowStockGames() {//esto es mas como informacion 
         List<Game> result = new ArrayList<>();
         for (int i = 0; i < games.size(); i++) {
             Game game = games.get(i);

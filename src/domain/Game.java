@@ -98,11 +98,26 @@ public abstract class Game implements Serializable {
     }
 
     /** Tells if the requested quantity can be delivered. */
-    public abstract boolean isAvailable(int quantity);
+    public abstract boolean isAvailable(int quantity);//firma de metodo
 
     /** Delivers the quantity (reduces stock or uses license keys). */
     public abstract void deliver(int quantity);
 
     /** Returns "Physical" or "Digital". */
     public abstract String getType();
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null ){
+            return false;
+        }
+        
+        if (this == obj){
+            return true;
+        }
+
+        Game g = (Game) obj;// casteo, obligo a una variable a ser de otro tipo
+
+        return this.code.equals(g.getCode())||this.getTitle().equalsIgnoreCase(g.getTitle());
+    }
 }

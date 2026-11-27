@@ -94,7 +94,7 @@ public class Sale implements Serializable {
     }
 
     @Override
-    public String toString() {
+    public String toString() {//hace que se pueda entender al imprimir en consola
         String state = "";
         if (cancelled) {
             state = " [CANCELLED]";

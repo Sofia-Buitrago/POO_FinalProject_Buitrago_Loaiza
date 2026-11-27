@@ -54,7 +54,7 @@ public class PhysicalGame extends Game {
         return stock <= minStock;
     }
 
-    @Override
+    @Override//sobreescribir, el metodo no es de el
     public boolean isAvailable(int quantity) {
         return quantity > 0 && stock >= quantity;
     }
