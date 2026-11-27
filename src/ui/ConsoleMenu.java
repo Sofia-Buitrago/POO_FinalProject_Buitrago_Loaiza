@@ -783,7 +783,7 @@ public class ConsoleMenu {
                     case 1: showTotalIncome(); break;
                     case 2: showLowStockGames(); break;
                     case 3: showTopSellingGames(); break;
-                    //case 4: showRestockSuggestions(); break;/
+                    case 4: showRestockSuggestions(); break;
                     case 0: back = true; break;
                     default: System.out.println("Invalid option.");
                 }
@@ -822,7 +822,7 @@ public class ConsoleMenu {
     }
 
     /** Shows which games should be restocked and how many copies to order. */
-    /*private void showRestockSuggestions() {
+    private void showRestockSuggestions() {
         List<RestockSuggestion> suggestions = store.getRestockSuggestions();
         if (suggestions.isEmpty()) {
             System.out.println("No game needs to be restocked now.");
@@ -830,7 +830,7 @@ public class ConsoleMenu {
         for (int i = 0; i < suggestions.size(); i++) {
             System.out.println(suggestions.get(i));
         }
-    }*/
+    }
 
     // ===============================================================
     // DATA
